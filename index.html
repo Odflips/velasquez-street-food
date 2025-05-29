@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Restaurante Online</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <img class="logo" src="/img/logo peke.png">
+    <h1>Velásquez Street Food</h1>
+    <nav>
+        <button onclick="showCart()">🛒 Carrito (<span id="cartCount">0</span>)</button>
+        <a href="https://wa.me/+593963656736" target="_blank">📱 WhatsApp</a>
+    </nav>
+</header>
+
+<section id="ofertas">
+    <h2>Oferta del Día</h2>
+    <p id="ofertaTexto">Cargando...</p>
+</section>
+
+<section id="menu">
+    <h2>Menú</h2>
+    <div id="productos"></div>
+</section>
+
+<section id="carrito" class="hidden">
+    <h2>🛒 Carrito</h2>
+    <div id="cartItems"></div>
+    <p>Total: $<span id="cartTotal">0.00</span></p>
+    
+    <h3>Datos del Cliente</h3>
+    <input type="text" id="nombreCliente" placeholder="Nombre completo" required><br>
+    <input type="tel" id="telefonoCliente" placeholder="Teléfono" required><br>
+    <input type="text" id="direccionCliente" placeholder="Dirección de entrega" required><br>
+    <button onclick="confirmarPedido()">Confirmar Pedido</button>
+    
+    <button onclick="hideCart()">Cerrar</button>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Restaurante</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <img class="logo" src="/img/logo peke.png">
+    <h1>Velásquez Street food</h1>
+    <nav>
+        <button onclick="mostrarSeccion('pedidos')">📑 Pedidos</button>
+        <button onclick="mostrarSeccion('ofertas')">🏷️ Ofertas</button>
+        <button onclick="mostrarSeccion('menu')">🍽️ Menú</button>
+    </nav>
+</header>
+
+<section id="seccionPedidos">
+    <h2>Pedidos</h2> <button onclick="generarReporte()">📄 Generar Reporte del Día</button>
+    <div id="listaPedidos"></div>
+</section>
+
+<section id="seccionOfertas" class="hidden">
+    <h2>Editar Oferta del Día</h2>
+    <textarea id="inputOferta" rows="4"></textarea>
+    <button onclick="guardarOferta()">Guardar Oferta</button>
+</section>
+
+<section id="seccionMenu" class="hidden">
+    <h2>Editar Menú</h2>
+    <div id="listaMenu"></div>
+    <h3>Agregar Producto</h3>
+    <input type="text" id="nombreProd" placeholder="Nombre">
+    <input type="number" id="precioProd" placeholder="Precio">
+    <input type="text" id="categoriaProd" placeholder="Categoría">
+    <button onclick="agregarProducto()">Agregar Producto</button>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
