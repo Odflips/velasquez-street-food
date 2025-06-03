@@ -1,5 +1,24 @@
 // ------------------------------
-// Datos iniciales
+// 🔥 Conexión a Firebase
+// ------------------------------
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCvcpCXIQa9tlTgb5Xk7me4BKesSmsPoNo",
+  authDomain: "jaime-restaurant.firebaseapp.com",
+  projectId: "jaime-restaurant",
+  storageBucket: "jaime-restaurant.appspot.com",  // ✔️ Corregido
+  messagingSenderId: "582421284418",
+  appId: "1:582421284418:web:4e057918b72b8f7f4f8fdb",
+  measurementId: "G-2CBJCP2YF2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ------------------------------
+// Datos iniciales (solo locales)
 // ------------------------------
 if (!localStorage.getItem('menu')) {
     const menu = [
@@ -12,10 +31,6 @@ if (!localStorage.getItem('menu')) {
 
 if (!localStorage.getItem('oferta')) {
     localStorage.setItem('oferta', "2x1 en Hamburguesas hasta las 16h!");
-}
-
-if (!localStorage.getItem('pedidos')) {
-    localStorage.setItem('pedidos', JSON.stringify([]));
 }
 
 // ------------------------------
@@ -50,7 +65,7 @@ function agregarAlCarrito(id) {
     const producto = JSON.parse(localStorage.getItem('menu')).find(p => p.id === id);
     carrito.push(producto);
     actualizarCarrito();
-    mostrarNotificacion("Agregado al carrito");
+    mostrarNotificacion("✅ Agregado al carrito");
 }
 
 function actualizarCarrito() {
@@ -79,42 +94,53 @@ function eliminarDelCarrito(index) {
     showCart();
 }
 
-function confirmarPedido() {
+async function confirmarPedido() {
     const nombre = document.getElementById('nombreCliente').value.trim();
     const telefono = document.getElementById('telefonoCliente').value.trim();
     const direccion = document.getElementById('direccionCliente').value.trim();
+
     if (!nombre || !telefono || !direccion) {
         alert("Por favor completa tus datos antes de confirmar el pedido.");
         return;
     }
 
+    if (carrito.length === 0) {
+        alert("Tu carrito está vacío.");
+        return;
+    }
+
     const total = carrito.reduce((sum, p) => sum + p.precio, 0);
 
-    const pedidos = JSON.parse(localStorage.getItem('pedidos'));
-    pedidos.push({
-        nombre, telefono, direccion,
-        id: Date.now(),
-        productos: carrito,
-        estado: "Pendiente",
-        total: total
-    });
-    localStorage.setItem('pedidos', JSON.stringify(pedidos));
-    alert("Pedido enviado");
-    carrito = [];
-    actualizarCarrito();
-    hideCart();
+    try {
+        await addDoc(collection(db, "pedidos"), {
+            nombre,
+            telefono,
+            direccion,
+            productos: carrito,
+            estado: "Pendiente",
+            total: total,
+            fecha: new Date().toISOString()
+        });
+
+        mostrarNotificacion("✅ Pedido enviado correctamente");
+        alert("Pedido enviado exitosamente");
+
+        carrito = [];
+        actualizarCarrito();
+        hideCart();
+    } catch (error) {
+        console.error("❌ Error al enviar el pedido:", error);
+        alert("❌ Error al enviar el pedido. Revisa la consola.");
+    }
 }
 
 // ------------------------------
-// Dashboard
+// Dashboard con Firebase 🔥
 // ------------------------------
 if (document.title.includes("Dashboard")) {
-    cargarPedidos();
+    cargarPedidosRealtime();
     cargarOfertaDashboard();
     cargarMenuDashboard();
-
-    // Actualiza automáticamente cada 5 segundos
-    setInterval(cargarPedidos, 5000);
 }
 
 function mostrarSeccion(seccion) {
@@ -124,41 +150,76 @@ function mostrarSeccion(seccion) {
     document.getElementById(`seccion${seccion.charAt(0).toUpperCase() + seccion.slice(1)}`).classList.remove('hidden');
 }
 
-function cargarPedidos() {
-    const pedidos = JSON.parse(localStorage.getItem('pedidos'));
+function cargarPedidosRealtime() {
     const contenedor = document.getElementById('listaPedidos');
-    contenedor.innerHTML = "";
-    pedidos.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        const productos = p.productos.map(pr => pr.nombre).join(", ");
-        const cliente = `👤 ${p.nombre} | 📞 ${p.telefono} | 📍 ${p.direccion}`;
-        div.innerHTML = `<p>Pedido #${p.id}</p><p>${cliente}</p>
-                          <p>Productos: ${productos}</p>
-                          <p>Estado: ${p.estado}</p>
-                          <button onclick="cambiarEstadoPedido(${p.id}, 'Aceptado')">Aceptar</button>
-                          <button onclick="cambiarEstadoPedido(${p.id}, 'Cancelado')">Cancelar</button>
-                          ${p.estado === 'Aceptado' ? `<button onclick="cambiarEstadoPedido(${p.id}, 'Finalizado')">Finalizar</button>` : ''}
-                          <button onclick="eliminarPedido(${p.id})">🗑 Eliminar</button>`;
-        contenedor.appendChild(div);
+    const pedidosRef = collection(db, "pedidos");
+    onSnapshot(pedidosRef, (snapshot) => {
+        contenedor.innerHTML = "";
+        snapshot.forEach(docSnap => {
+            const p = docSnap.data();
+            const id = docSnap.id;
+            const productos = p.productos.map(pr => pr.nombre).join(", ");
+            const cliente = `👤 ${p.nombre} | 📞 ${p.telefono} | 📍 ${p.direccion}`;
+
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `<p>Pedido #${id}</p><p>${cliente}</p>
+                              <p>Productos: ${productos}</p>
+                              <p>Estado: ${p.estado}</p>
+                              <p>Total: $${p.total}</p>
+                              <button onclick="cambiarEstadoPedido('${id}', 'Aceptado')">Aceptar</button>
+                              <button onclick="cambiarEstadoPedido('${id}', 'Cancelado')">Cancelar</button>
+                              ${p.estado === 'Aceptado' ? `<button onclick="cambiarEstadoPedido('${id}', 'Finalizado')">Finalizar</button>` : ''}
+                              <button onclick="eliminarPedido('${id}')">🗑 Eliminar</button>`;
+            contenedor.appendChild(div);
+        });
     });
 }
 
-function cambiarEstadoPedido(id, estado) {
-    const pedidos = JSON.parse(localStorage.getItem('pedidos'));
-    const pedido = pedidos.find(p => p.id === id);
-    pedido.estado = estado;
-    localStorage.setItem('pedidos', JSON.stringify(pedidos));
-    cargarPedidos();
+async function cambiarEstadoPedido(id, estado) {
+    const pedidoRef = doc(db, "pedidos", id);
+    await updateDoc(pedidoRef, { estado: estado });
 }
 
-function eliminarPedido(id) {
-    const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
-    const nuevosPedidos = pedidos.filter(p => p.id !== id);
-    localStorage.setItem('pedidos', JSON.stringify(nuevosPedidos));
-    cargarPedidos();
+async function eliminarPedido(id) {
+    await deleteDoc(doc(db, "pedidos", id));
 }
 
+async function generarReporte() {
+    const snapshot = await getDocs(collection(db, "pedidos"));
+    const pedidos = [];
+    snapshot.forEach(docSnap => {
+        const p = docSnap.data();
+        if (p.estado === 'Finalizado') {
+            pedidos.push(p);
+        }
+    });
+
+    const totalPedidos = pedidos.length;
+    const totalVentas = pedidos.reduce((sum, p) => sum + (p.total || 0), 0);
+
+    let texto = `📄 Reporte de Pedidos Finalizados - ${new Date().toLocaleDateString()}\n\n`;
+    texto += `Total de pedidos: ${totalPedidos}\n`;
+    texto += `Monto total vendido: $${totalVentas}\n\n`;
+
+    pedidos.forEach(p => {
+        texto += `🆔 Pedido: ${p.id}\n`;
+        texto += `Cliente: ${p.nombre} | Tel: ${p.telefono} | Dir: ${p.direccion}\n`;
+        texto += `Productos: ${p.productos.map(pr => pr.nombre).join(', ')}\n`;
+        texto += `Total: $${p.total}\n`;
+        texto += `-------------------------------\n`;
+    });
+
+    const blob = new Blob([texto], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'reporte_pedidos_finalizados.txt';
+    link.click();
+}
+
+// ------------------------------
+// Ofertas y Menú (Local)
+// ------------------------------
 function cargarOfertaDashboard() {
     document.getElementById('inputOferta').value = localStorage.getItem('oferta');
 }
@@ -204,34 +265,6 @@ function eliminarProducto(id) {
 }
 
 // ------------------------------
-// Generar reporte de pedidos finalizados
-// ------------------------------
-function generarReporte() {
-    const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
-    const pedidosFinalizados = pedidos.filter(p => p.estado === 'Finalizado');
-
-    let texto = `📄 Reporte de Pedidos Finalizados - ${new Date().toLocaleDateString()}\n\n`;
-    texto += `Total de pedidos: ${pedidosFinalizados.length}\n`;
-
-    const totalVentas = pedidosFinalizados.reduce((sum, p) => sum + p.total, 0);
-    texto += `Monto total vendido: $${totalVentas}\n\n`;
-
-    pedidosFinalizados.forEach(p => {
-        texto += `🆔 Pedido: ${p.id}\n`;
-        texto += `Cliente: ${p.nombre} | Tel: ${p.telefono} | Dir: ${p.direccion}\n`;
-        texto += `Productos: ${p.productos.map(pr => pr.nombre).join(', ')}\n`;
-        texto += `Total: $${p.total}\n`;
-        texto += `-------------------------------\n`;
-    });
-
-    const blob = new Blob([texto], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'reporte_pedidos_finalizados.txt';
-    link.click();
-}
-
-// ------------------------------
 // Notificación agregar al carrito
 // ------------------------------
 function mostrarNotificacion(mensaje) {
@@ -241,5 +274,28 @@ function mostrarNotificacion(mensaje) {
     document.body.appendChild(notif);
     setTimeout(() => {
         notif.remove();
-    }, 2000);
+    }, 3000);
 }
+
+// ------------------------------
+// Hacer funciones accesibles al HTML
+// ------------------------------
+window.cargarMenu = cargarMenu;
+window.cargarOferta = cargarOferta;
+window.agregarAlCarrito = agregarAlCarrito;
+window.showCart = showCart;
+window.hideCart = hideCart;
+window.eliminarDelCarrito = eliminarDelCarrito;
+window.confirmarPedido = confirmarPedido;
+
+window.cargarPedidosRealtime = cargarPedidosRealtime;
+window.cambiarEstadoPedido = cambiarEstadoPedido;
+window.eliminarPedido = eliminarPedido;
+window.generarReporte = generarReporte;
+
+window.mostrarSeccion = mostrarSeccion;
+window.cargarOfertaDashboard = cargarOfertaDashboard;
+window.guardarOferta = guardarOferta;
+window.cargarMenuDashboard = cargarMenuDashboard;
+window.agregarProducto = agregarProducto;
+window.eliminarProducto = eliminarProducto;
