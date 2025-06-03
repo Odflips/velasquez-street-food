@@ -8,7 +8,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCvcpCXIQa9tlTgb5Xk7me4BKesSmsPoNo",
   authDomain: "jaime-restaurant.firebaseapp.com",
   projectId: "jaime-restaurant",
-  storageBucket: "jaime-restaurant.appspot.com",  // ✔️ Corregido
+  storageBucket: "jaime-restaurant.appspot.com",
   messagingSenderId: "582421284418",
   appId: "1:582421284418:web:4e057918b72b8f7f4f8fdb",
   measurementId: "G-2CBJCP2YF2"
@@ -18,22 +18,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ------------------------------
-// Datos iniciales (solo locales)
-// ------------------------------
-if (!localStorage.getItem('menu')) {
-    const menu = [
-        { id: 1, nombre: "Pizza Margarita", precio: 25, categoria: "Pizzas" },
-        { id: 2, nombre: "Hamburguesa Clásica", precio: 18, categoria: "Hamburguesas" },
-        { id: 3, nombre: "Soda", precio: 5, categoria: "Bebidas" }
-    ];
-    localStorage.setItem('menu', JSON.stringify(menu));
-}
-
-if (!localStorage.getItem('oferta')) {
-    localStorage.setItem('oferta', "2x1 en Hamburguesas hasta las 16h!");
-}
-
-// ------------------------------
 // Cliente
 // ------------------------------
 if (document.title.includes("Restaurante Online")) {
@@ -41,31 +25,38 @@ if (document.title.includes("Restaurante Online")) {
     cargarOferta();
 }
 
-function cargarMenu() {
-    const productos = JSON.parse(localStorage.getItem('menu'));
+async function cargarMenu() {
     const contenedor = document.getElementById('productos');
     contenedor.innerHTML = "";
-    productos.forEach(p => {
+    const snapshot = await getDocs(collection(db, "menu"));
+    snapshot.forEach(docSnap => {
+        const p = docSnap.data();
+        const id = docSnap.id;
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `<h3>${p.nombre}</h3>
                           <p>Precio: $${p.precio}</p>
-                          <button onclick="agregarAlCarrito(${p.id})">Agregar al carrito</button>`;
+                          <button onclick="agregarAlCarrito('${id}')">Agregar al carrito</button>`;
         contenedor.appendChild(div);
     });
 }
 
-function cargarOferta() {
-    document.getElementById('ofertaTexto').innerText = localStorage.getItem('oferta');
+async function cargarOferta() {
+    const snapshot = await getDocs(collection(db, "ofertas"));
+    const oferta = snapshot.docs[0]?.data().texto || "Sin ofertas disponibles";
+    document.getElementById('ofertaTexto').innerText = oferta;
 }
 
 let carrito = [];
 
-function agregarAlCarrito(id) {
-    const producto = JSON.parse(localStorage.getItem('menu')).find(p => p.id === id);
-    carrito.push(producto);
-    actualizarCarrito();
-    mostrarNotificacion("✅ Agregado al carrito");
+async function agregarAlCarrito(id) {
+    const snapshot = await getDocs(collection(db, "menu"));
+    const productoDoc = snapshot.docs.find(doc => doc.id === id);
+    if (productoDoc) {
+        carrito.push(productoDoc.data());
+        actualizarCarrito();
+        mostrarNotificacion("✅ Agregado al carrito");
+    }
 }
 
 function actualizarCarrito() {
@@ -218,49 +209,66 @@ async function generarReporte() {
 }
 
 // ------------------------------
-// Ofertas y Menú (Local)
+// Ofertas y Menú 🔥 Firebase
 // ------------------------------
-function cargarOfertaDashboard() {
-    document.getElementById('inputOferta').value = localStorage.getItem('oferta');
+async function cargarOfertaDashboard() {
+    const snapshot = await getDocs(collection(db, "ofertas"));
+    const oferta = snapshot.docs[0]?.data().texto || "";
+    document.getElementById('inputOferta').value = oferta;
 }
 
-function guardarOferta() {
-    const texto = document.getElementById('inputOferta').value;
-    localStorage.setItem('oferta', texto);
+async function guardarOferta() {
+    const texto = document.getElementById('inputOferta').value.trim();
+    const ofertasRef = collection(db, "ofertas");
+
+    const snapshot = await getDocs(ofertasRef);
+    snapshot.forEach(async (docSnap) => {
+        await deleteDoc(doc(db, "ofertas", docSnap.id));
+    });
+
+    await addDoc(ofertasRef, { texto });
+
     alert("Oferta guardada");
+    cargarOferta();
 }
 
-function cargarMenuDashboard() {
-    const menu = JSON.parse(localStorage.getItem('menu'));
+async function cargarMenuDashboard() {
     const contenedor = document.getElementById('listaMenu');
     contenedor.innerHTML = "";
-    menu.forEach(p => {
+    const snapshot = await getDocs(collection(db, "menu"));
+    snapshot.forEach(docSnap => {
+        const p = docSnap.data();
+        const id = docSnap.id;
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `<p>${p.nombre} - $${p.precio} (${p.categoria})</p>
-                          <button onclick="eliminarProducto(${p.id})">Eliminar</button>`;
+                          <button onclick="eliminarProducto('${id}')">Eliminar</button>`;
         contenedor.appendChild(div);
     });
 }
 
-function agregarProducto() {
-    const nombre = document.getElementById('nombreProd').value;
+async function agregarProducto() {
+    const nombre = document.getElementById('nombreProd').value.trim();
     const precio = parseFloat(document.getElementById('precioProd').value);
-    const categoria = document.getElementById('categoriaProd').value;
+    const categoria = document.getElementById('categoriaProd').value.trim();
+
     if (!nombre || !precio || !categoria) {
-        alert("Rellena todos los campos");
+        alert("Rellena todos los campos.");
         return;
     }
-    const menu = JSON.parse(localStorage.getItem('menu'));
-    menu.push({ id: Date.now(), nombre, precio, categoria });
-    localStorage.setItem('menu', JSON.stringify(menu));
+
+    await addDoc(collection(db, "menu"), {
+        nombre,
+        precio,
+        categoria
+    });
+
+    alert("Producto agregado");
     cargarMenuDashboard();
 }
 
-function eliminarProducto(id) {
-    let menu = JSON.parse(localStorage.getItem('menu'));
-    menu = menu.filter(p => p.id !== id);
-    localStorage.setItem('menu', JSON.stringify(menu));
+async function eliminarProducto(id) {
+    await deleteDoc(doc(db, "menu", id));
     cargarMenuDashboard();
 }
 
