@@ -1,20 +1,24 @@
+/* Fuente global */
 * {
     font-family: 'Raleway', sans-serif;
 }
 
+/* Fondo general */
 body {
-    font-family: Arial, sans-serif;
     margin: 20px;
-    background: #f68d31;
+    background: #FFF5E6; /* Fondo naranja suave */
+    color: #000000;
 }
 
+/* Header */
 header {
-    background: #ffffff;
+    background: white;
     color: white;
     padding: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-radius: 8px;
 }
 
 .logo {
@@ -24,51 +28,84 @@ header {
 
 nav button, nav a {
     margin-left: 10px;
-    padding: 5px 10px;
-    background: #fff;
-    color: #333;
+    padding: 8px 15px;
+    background: #FF6B00;
+    color: white;
     border: none;
+    border-radius: 6px;
     cursor: pointer;
     text-decoration: none;
+    transition: background-color 0.3s;
 }
 
+nav button:hover, nav a:hover {
+    background-color: #E65C00;
+}
+
+/* Títulos */
 h1, h2 {
-    color: #333;
+    color: #000000;
 }
 
+/* Secciones */
 section {
     background: white;
-    padding: 15px;
-    margin: 10px 0;
+    padding: 20px;
+    margin: 15px 0;
     border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.05);
 }
 
+/* Botones generales */
 button {
-    padding: 5px 10px;
+    padding: 8px 15px;
     margin: 5px;
+    background-color: #FF6B00;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-.hidden {
-    display: none;
+button:hover {
+    background-color: #E65C00;
 }
 
+/* Tarjetas */
 .card {
+    background-color: white;
     border: 1px solid #ddd;
-    padding: 10px;
+    padding: 15px;
     border-radius: 8px;
-    margin: 5px 0;
+    margin: 8px 0;
+    box-shadow: 0 0 5px rgba(0,0,0,0.05);
 }
 
+/* Botones dentro de las tarjetas (Aceptar, Cancelar, etc.) */
 .card button {
-    background: #28a745;
+    background: #FF6B00;
     color: white;
     border: none;
 }
 
 .card button:hover {
-    background: #218838;
+    background-color: #E65C00;
 }
 
+/* Botón secundario opcional */
+button.secundario {
+    background-color: white;
+    color: #FF6B00;
+    border: 2px solid #FF6B00;
+}
+
+button.secundario:hover {
+    background-color: #FF6B00;
+    color: white;
+}
+
+/* Notificaciones */
 .notificacion {
     position: fixed;
     top: 20px;
@@ -79,4 +116,9 @@ button {
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
     z-index: 9999;
+}
+
+/* Elementos ocultos */
+.hidden {
+    display: none;
 }
