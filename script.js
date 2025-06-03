@@ -5,13 +5,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebas
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCvcpCXIQa9tlTgb5Xk7me4BKesSmsPoNo",
-  authDomain: "jaime-restaurant.firebaseapp.com",
-  projectId: "jaime-restaurant",
-  storageBucket: "jaime-restaurant.appspot.com",
-  messagingSenderId: "582421284418",
-  appId: "1:582421284418:web:4e057918b72b8f7f4f8fdb",
-  measurementId: "G-2CBJCP2YF2"
+    apiKey: "AIzaSyCvcpCXIQa9tlTgb5Xk7me4BKesSmsPoNo",
+    authDomain: "jaime-restaurant.firebaseapp.com",
+    projectId: "jaime-restaurant",
+    storageBucket: "jaime-restaurant.appspot.com",
+    messagingSenderId: "582421284418",
+    appId: "1:582421284418:web:4e057918b72b8f7f4f8fdb",
+    measurementId: "G-2CBJCP2YF2"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -63,6 +63,7 @@ function actualizarCarrito() {
     document.getElementById('cartCount').innerText = carrito.length;
 }
 
+// 🛒 Modal: Mostrar carrito
 function showCart() {
     const items = document.getElementById('cartItems');
     items.innerHTML = "";
@@ -73,10 +74,13 @@ function showCart() {
     });
     document.getElementById('cartTotal').innerText = total.toFixed(2);
     document.getElementById('carrito').classList.remove('hidden');
+    document.body.classList.add('modal-open');
 }
 
+// 🛑 Modal: Ocultar carrito
 function hideCart() {
     document.getElementById('carrito').classList.add('hidden');
+    document.body.classList.remove('modal-open');
 }
 
 function eliminarDelCarrito(index) {

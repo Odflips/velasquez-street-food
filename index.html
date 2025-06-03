@@ -5,8 +5,9 @@
     <title>Restaurante Online</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+
 <body>
 
 <header>
@@ -28,18 +29,27 @@
     <div id="productos"></div>
 </section>
 
+<!-- 🛒 Modal del carrito -->
 <section id="carrito" class="hidden">
     <h2>🛒 Carrito</h2>
     <div id="cartItems"></div>
     <p>Total: $<span id="cartTotal">0.00</span></p>
-    
+
     <h3>Datos del Cliente</h3>
-    <input type="text" id="nombreCliente" placeholder="Nombre completo" required><br>
-    <input type="tel" id="telefonoCliente" placeholder="Teléfono" required><br>
-    <input type="text" id="direccionCliente" placeholder="Dirección de entrega" required><br>
-   <button onclick="confirmarPedido()">Confirmar Pedido</button>
-    
-    <button onclick="hideCart()">Cerrar</button>
+    <div class="formulario-cliente">
+        <label for="nombreCliente">Nombre</label>
+        <input type="text" id="nombreCliente" placeholder="Nombre completo" required>
+
+        <label for="telefonoCliente">Teléfono</label>
+        <input type="tel" id="telefonoCliente" placeholder="Teléfono" required>
+
+        <label for="direccionCliente">Dirección</label>
+        <input type="text" id="direccionCliente" placeholder="Dirección de entrega" required>
+
+        <button onclick="confirmarPedido()">Confirmar Pedido</button>
+    </div>
+
+    <button class="cerrar" onclick="hideCart()">Cerrar</button>
 </section>
 
 <script type="module" src="script.js"></script>

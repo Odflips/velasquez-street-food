@@ -122,3 +122,150 @@ button.secundario:hover {
 .hidden {
     display: none;
 }
+
+/* 🌟 Modal para el carrito */
+#carrito {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    width: 90%;
+    max-width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Fondo oscuro cuando el modal está abierto */
+body.modal-open::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 998;
+}
+
+/* Estilo para el botón cerrar en el modal */
+#carrito button.cerrar {
+    background-color: #ccc;
+    color: #333;
+}
+
+#carrito button.cerrar:hover {
+    background-color: #bbb;
+}
+
+/* 🌟 Estilo para el formulario de datos del pedido */
+.formulario-cliente {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.05);
+    margin-bottom: 15px;
+}
+
+.formulario-cliente label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #000000;
+}
+
+.formulario-cliente input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 16px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.formulario-cliente input:focus {
+    border-color: #FF6B00;
+    box-shadow: 0 0 5px rgba(255,107,0,0.5);
+    outline: none;
+}
+
+.formulario-cliente button {
+    width: 100%;
+    padding: 10px;
+    background-color: #FF6B00;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.formulario-cliente button:hover {
+    background-color: #E65C00;
+}
+
+/* 🌟 Estilos responsivos para móviles */
+@media screen and (max-width: 768px) {
+
+    body {
+        margin: 10px;
+        background-color: #FFF5E6;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .logo {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 10px;
+    }
+
+    nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    nav button, nav a {
+        padding: 10px 15px;
+        font-size: 16px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    section {
+        padding: 15px;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
+    button {
+        width: 100%;
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    #cartItems p {
+        font-size: 14px;
+    }
+}
